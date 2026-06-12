@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>穩健配置 評估工具 — 定稿 2026/6/12</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20fill='%23FFD000'%20d='M12%2017.27L18.18%2021l-1.64-7.03L22%209.24l-7.19-.61L12%202%209.19%208.63%202%209.24l5.46%204.73L5.82%2021z'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f4efe6;--card:#fffdf8;--ink:#322a1e;--mut:#867a66;--line:#e6dccb;
+--accent:#0d9488;--acc2:#14b8a6;--up:#d83c4a;--dn:#0f9d63;--amb:#bd8420;--chip:#efe7d6;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang TC","Microsoft JhengHei",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+.deck{max-width:920px;margin:0 auto;padding:18px 14px 60px}
+.slide{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 24px 18px;margin-bottom:12px;position:relative}
+.barlbl{font-size:14.5px;color:var(--ink);font-weight:800;margin:20px 0 8px}
+.slide h2{margin:0 0 12px}
+.resetbtn{position:absolute;top:18px;right:18px;background:transparent;border:1px solid var(--line);color:var(--mut);font-size:12px;font-weight:800;padding:5px 11px;border-radius:8px;cursor:pointer}
+.resetbtn:hover{border-color:var(--accent);color:var(--accent)}
+.kicker{font-size:12px;font-weight:800;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
+h1{font-size:26px;font-weight:800;line-height:1.25}h2{font-size:20px;font-weight:800}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px}
+.up{color:var(--up)}.dn{color:var(--dn)}.acc{color:var(--accent)}.mut{color:var(--mut)}
+input[type=number],input[type=date]{font-family:inherit;font-size:14px;font-weight:700;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:7px;padding:5px 7px;text-align:right}
+input[type=date]{text-align:left;font-size:13px}
+select{font-family:inherit;font-size:13px;font-weight:800;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:7px;padding:5px 7px}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:4px;background:var(--line);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:3px solid #fff}
+input[type=range]:disabled{opacity:.65}
+input[type=range]:disabled::-webkit-slider-thumb{background:var(--mut);cursor:default}
+input[type=range]:disabled::-moz-range-thumb{background:var(--mut);cursor:default}
+.fundbox{display:flex;align-items:center;gap:10px;background:var(--chip);border-radius:10px;padding:7px 12px;margin:4px 0 12px;flex-wrap:wrap}
+.fundbox label{font-size:13px;font-weight:800}.fundbox input{width:128px;font-size:15px;padding:4px 7px}
+.arow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.arow .nm{width:104px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.arow .dot{width:12px;height:12px;border-radius:3px;flex:0 0 auto}
+.arow input[type=range]{flex:1;min-width:60px}
+.arow .out{display:flex;justify-content:flex-end;flex:0 0 auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+.arow .out b{font-size:16px}
+.arow .out .o1{width:54px;text-align:right}
+.arow .out .o2{width:94px;text-align:right;font-size:12px;color:var(--mut);font-weight:700;align-self:center}
+.arow .out .o3{width:92px;text-align:right;font-size:12px;color:var(--mut);font-weight:700;align-self:center}
+.seg .s1{font-size:12.5px;font-weight:800;line-height:1.25}
+.seg .s2{font-size:11.5px;font-weight:700;opacity:.92;line-height:1.25}
+.bar{display:flex;height:34px;border-radius:9px;overflow:hidden;margin:0 0 6px;border:1px solid var(--line)}
+.seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800;white-space:nowrap;transition:width .15s;overflow:hidden}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 4px}
+.chip{background:var(--chip);border-radius:12px;padding:11px 14px;flex:1;min-width:130px}
+.chip .l{font-size:12px;color:var(--mut);font-weight:700}.chip .v{font-size:22px;font-weight:900;margin-top:2px}.chip .s{font-size:11px;color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0 4px}
+th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:12px;color:var(--mut);font-weight:800}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}td.b{font-weight:800}
+.bk{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;background:#fff}
+.bk.duedate{border-color:var(--amb);box-shadow:0 0 0 2px rgba(189,132,32,.15)}
+.bk.done{opacity:.78}
+.bkhd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bkhd .bn{font-weight:800;font-size:15px;flex:0 0 auto}
+.bkf{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--mut)}
+.bkf input{width:110px}
+.bkf input[type=date]{width:160px;text-align:left;font-size:13px;padding:5px 6px}
+.bkhd .amt{margin-left:auto;font-size:18px;font-weight:900;text-align:right}
+.bkhd .amt .s{font-size:11px;color:var(--mut);font-weight:700}
+.bknote{font-size:12px;color:var(--mut);margin:8px 0 2px}
+.minibar{display:flex;height:9px;border-radius:5px;overflow:hidden;margin:10px 0 8px;background:var(--line)}
+.minibar div{height:100%}
+.prow{display:flex;align-items:center;gap:12px;margin:7px 0}
+.prow .pnm{width:58px;font-size:12.5px;font-weight:800;flex:0 0 auto}
+.prow .pbar{flex:1;height:14px;border-radius:7px;background:var(--line);overflow:hidden;position:relative;min-width:60px}
+.prow .pbar div{position:absolute;left:0;top:0;bottom:0;border-radius:7px}
+.prow .ppct{flex:0 0 78px;text-align:right;font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.prow .pamt{flex:0 0 170px;text-align:right;font-size:12.5px;color:var(--mut);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bkbreak{display:flex;gap:7px;flex-wrap:wrap}
+.bkbreak span{background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 9px 4px 8px;font-size:12px;font-weight:700;border-left-width:4px}
+.bkbreak span i{color:var(--mut);font-weight:700;font-style:normal}
+ul{margin:8px 0 4px;padding-left:2px;list-style:none}
+li{padding:7px 0 7px 24px;position:relative;font-size:14.5px;border-bottom:1px solid var(--line)}
+li:last-child{border-bottom:none}
+li:before{content:"";position:absolute;left:5px;top:14px;width:7px;height:7px;border-radius:2px;background:var(--accent)}
+li.warn:before{background:var(--up)}
+.callout{background:var(--chip);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:11px 14px;margin:12px 0;font-size:14px}
+.btn{background:var(--accent);border:none;color:#fff;font-size:12px;font-weight:800;padding:7px 13px;border-radius:8px;cursor:pointer;margin-right:6px}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.note{font-size:12px;color:var(--mut);margin-top:12px;line-height:1.7;border-top:1px dashed var(--line);padding-top:9px}
+.warnbox{background:rgba(216,60,74,.08);border:1px solid rgba(216,60,74,.3);border-radius:10px;padding:8px 12px;font-size:13px;margin:8px 0;color:var(--up);font-weight:700}
+.okbox{background:rgba(15,157,99,.08);border:1px solid rgba(15,157,99,.3);border-radius:10px;padding:8px 12px;font-size:13px;margin:8px 0;color:var(--dn);font-weight:700}
+.zone{font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px}
+.z0{background:var(--chip);color:var(--mut)}.z1{background:rgba(189,132,32,.16);color:var(--amb)}.z2{background:rgba(216,60,74,.14);color:var(--up)}
+.st-wait{background:var(--chip);color:var(--mut)}.st-due{background:rgba(189,132,32,.16);color:var(--amb)}.st-done{background:rgba(15,157,99,.14);color:var(--dn)}.st-part{background:rgba(13,148,136,.14);color:var(--accent)}
+.qa{font-size:10px;margin-left:3px}
+.tip{position:relative;cursor:help;border-bottom:1px dotted var(--mut);outline:none}
+.tip::after{content:attr(data-tip);position:absolute;right:0;bottom:135%;background:var(--ink);color:#fffdf8;font-size:12px;font-weight:700;padding:6px 11px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:30}
+.tip:hover::after,.tip:focus::after,.tip:active::after{opacity:1}
+table.ctr th,table.ctr td{text-align:center}
+table.ctr th:first-child,table.ctr td:first-child{text-align:left}
+.sechd{cursor:pointer;user-select:none}
+.sechd h2{margin:0}
+.caret{color:var(--accent);font-size:17px;font-weight:800;margin-left:auto}
+h2.sect{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:21px}
+.sect .num{color:var(--accent)}
+.sect .hint{font-size:12.5px;color:var(--mut);font-weight:700;letter-spacing:.5px}
+.secbody{margin-top:12px}
+.mkstatus{font-size:12px;color:var(--mut);margin-left:8px}
+.smin{width:78px}
+td.evt,th.evt{text-align:left;white-space:normal;min-width:230px;color:var(--mut);font-size:12.5px;line-height:1.45}
+.twrap{overflow-x:auto}
+.twrap table{white-space:nowrap}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{flex:0 0 auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 18px;font-size:14px;font-weight:800;cursor:pointer;color:var(--mut);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+@media(max-width:680px){
+.deck{padding:12px 8px 40px}.slide{padding:20px 14px}h1{font-size:22px}
+.arow .nm{width:74px;font-size:12.5px}.arow .out{width:auto;min-width:150px;font-size:12px}.arow .out b{font-size:14px}
+th,td{padding:6px 5px;font-size:13px}
+.prow{gap:7px}.prow .pnm{width:46px;font-size:11.5px}
+.prow .ppct{flex-basis:52px;font-size:12px}.prow .pamt{flex-basis:122px;font-size:10.5px}
+.arow .out .o1{width:44px}.arow .out .o2{width:80px;font-size:11px}.arow .out .o3{width:78px;font-size:10.5px}
+.bk table{display:block;overflow-x:auto;white-space:nowrap}
+.bkhd .amt{font-size:15px}
+.seg .s1{font-size:11px}.seg .s2{font-size:10px}
+}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<div class="tabs">
+  <div class="tab on" id="tab-tool" onclick="showView('tool')">🛠 評估工具</div>
+  <div class="tab" id="tab-returns" onclick="showView('returns')">📊 報酬率總表</div>
+</div>
+
+<div id="view-tool">
+
+<section class="slide">
+  <div class="kicker">投資評估工具 · Erick</div>
+  <h1>穩健核心配置</h1>
+  <div class="sub">QQQ 30｜VOO 25｜GOOGL 20｜2330 15｜0050 10</div>
+  <div class="fundbox" style="margin-top:12px">
+    <label>投資總額</label>
+    <input type="number" id="fund" value="1000000" step="10000" min="0">
+    <span class="mut" style="font-size:13px">元（台幣）</span>
+    <label style="margin-left:6px">美元匯率</label>
+    <input type="number" id="fx" value="32.0" step="0.1" min="20" style="width:88px">
+  </div>
+</section>
+
+<section class="slide">
+  <h2 class="sect"><span class="num">①</span>資金與配置<span class="hint">拖滑桿調比例，金額即時換算</span></h2>
+  <button class="resetbtn" onclick="resetAlloc()">↺ 重設配置</button>
+  <div class="barlbl" style="margin-top:8px">配置總覽</div>
+  <div class="bar" id="allocbar" style="height:50px"></div>
+  <div class="barlbl">市場分布</div>
+  <div class="bar" id="groupbar"></div>
+  <div id="allocrows" style="margin-top:14px"></div>
+  <div id="sumwarn"></div>
+  <div class="kicker" style="margin-top:16px">實質曝險（穿透 0050／QQQ／VOO）</div>
+  <div class="chips" style="margin-top:6px">
+    <div class="chip"><div class="l">台積電 2330 實質曝險</div><div class="v" id="tsmc_exp">—</div><div class="s"><span id="tsmc_amt">—</span>　·　2330 + 0050×57%</div></div>
+    <div class="chip"><div class="l">Alphabet／GOOGL 實質曝險</div><div class="v" id="googl_exp">—</div><div class="s"><span id="googl_amt">—</span>　·　GOOGL + QQQ×~5% + VOO×~3.5%</div></div>
+  </div>
+  <div class="note">「台美股比例」＝美股（QQQ＋VOO＋GOOGL）對台股（2330＋0050）。定稿：美:台 75:25、指數:個股 65:35。<b>實質曝險</b>把 ETF 內含成分也算進來（🟡估算，會隨指數調整變動）：台積電 ≈ 20.7%（>25% 提醒再平衡）；Alphabet ≈ 23%（>28% 提醒再平衡）。比例不含現金——現金與醫療備用金（台幣定存）獨立於本組合之外。</div>
+</section>
+
+<section class="slide">
+  <button class="resetbtn" id="hidebtn" onclick="toggleHide()">▦ 隱藏未到期批次</button>
+  <h2 class="sect"><span class="num">②</span>部位建立<span class="hint">4 批 × 25% 機械式 · 到點就買、不擇時</span></h2>
+  <div id="batchwrap"></div>
+
+  <h2 class="sect" style="margin-top:46px;font-size:17px">持倉追蹤<span class="hint">買入達成率 · 例外條款監測</span></h2>
+  <div id="progbox"></div>
+  <table class="ctr" style="margin-top:24px">
+    <tr><th style="width:16%">標的</th><th style="width:12%">資產配置</th><th style="width:20%">持有部位</th><th style="width:18%">已投入</th><th style="width:14%">損益%</th><th style="width:20%">部位完成率</th></tr>
+    <tbody id="holdbody"></tbody>
+  </table>
+  <div id="pnlbox"></div>
+  <div class="note">此表<b>自動彙總上方各批次填的買入</b>（平均成本＝全部批次加權平均），不用重複輸入。美股以美元計價，台幣金額用上方匯率換算。<b>應達進度</b>＝已到期批次數×25%；組合損益＝現值合計÷成本合計−1，<b>觸及 −10% → 立即提前執行下一批，後續日期不變。</b>所有輸入存在這台電腦的瀏覽器裡。</div>
+</section>
+
+<section class="slide">
+  <div class="sechd" onclick="toggleSec('mkt')">
+    <h2 class="sect"><span class="num">③</span>多市場位階<span class="hint">自動抓價 · 美台大盤＋五檔</span><span class="mkstatus" id="mkstatus">　自動載入中…</span><span class="caret" id="ca_mkt">▸</span></h2>
+  </div>
+  <div class="secbody" id="sb_mkt">
+  <div class="sub" style="margin-top:0">頁面開啟自動抓現價與近月高（Yahoo）。抓不到或想試算可手動覆蓋。</div>
+  <table class="ctr">
+    <tr><th style="width:24%">指標 / 標的</th><th style="width:19%">現價</th><th style="width:19%">近高(近月)</th><th style="width:16%">自高點</th><th style="width:22%">區間</th></tr>
+    <tbody id="mktbody"></tbody>
+  </table>
+  <div style="margin-top:8px"><button class="btn" onclick="fetchMkt()">↻ 重新抓價</button></div>
+  <div class="note">批次依日程機械執行，<b>位階僅供參考、不再觸發加碼</b>；唯一會改變動作的是「組合自第 1 批成本 −10%」的例外條款（見②）。區間標示：自近高 ≥15% 重挫、≥10% 深回檔、8–10% 留意。自動價可能延遲 15–20 分鐘，盤後為當日收盤。</div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="sechd" onclick="toggleSec('view')">
+    <h2 class="sect"><span class="num">④</span>觀點與風險<span class="hint">已對齊的判斷</span><span class="caret" id="ca_view">▸</span></h2>
+  </div>
+  <div class="secbody" id="sb_view">
+  <ul>
+    <li>看好美國（產業鏈頂端、高毛利）；<b>2330 是台股例外</b>—先進製程獨佔、本身是源頭。</li>
+    <li>VTI vs VOO 已比過：差距 ≤0.3pp，定稿選 VOO（純大型股）。最佳化也掃過：定稿已貼近效率前緣，不再調比例。</li>
+    <li class="warn">五檔同屬 AI 鏈、<b>同漲同跌</b>，分散有限 → 防禦靠組合外現金與分批紀律。</li>
+    <li class="warn">0050 在系統性股災不保護（2008 −43%），它的保險只對「台積電單一事件」有效。</li>
+    <li class="warn">美股 75% 含台幣匯率風險（現約 32）→ 用長期持有＋後兩批留台幣分批換匯處理。</li>
+    <li class="warn">過去 1 年台股翻倍是 20 年極端值，<b>不可外推</b>；規劃用 15–20 年年化（16–20%）再打折。</li>
+  </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="sechd" onclick="toggleSec('next')">
+    <h2 class="sect"><span class="num">⑤</span>下一步<span class="hint">接下來這樣做</span><span class="caret" id="ca_next">▸</span></h2>
+  </div>
+  <div class="secbody" id="sb_next">
+  <ul>
+    <li><b>機械式日程</b>：6/12 補齊第 1 批 → 6/22 第 2 批 → 7/6 第 3 批 → 7/20 完成建倉。自己記日期，到日執行。</li>
+    <li><b>每批下單後</b>：成交價/股數記入 Erick_投資損益紀錄_共用.md，並回來更新②的「已投入金額」與批次狀態。</li>
+    <li><b>每日 17:00 排程</b>：標的改為 2330／0050（＋QQQ／VOO／GOOGL 收盤）。</li>
+    <li><b>季度檢視</b>：台積電實質曝險 >25%、或 GOOGL 實質 >28% 時再平衡。</li>
+  </ul>
+  <div class="note">數據紀律：台股＝證交所官方 API（交叉驗證 ✓）；位階自動價為 Yahoo 即時/收盤，僅供參考。本檔非投資建議。</div>
+  </div>
+</section>
+
+</div><!-- /view-tool -->
+
+<div id="view-returns" style="display:none">
+
+<section class="slide">
+  <h2 class="sect">累積報酬率<span class="hint">含息再投入 · 含大盤對照</span></h2>
+  <div class="note" style="border:none;margin:2px 0 4px;padding-top:2px"><b>互比標的</b>：
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t31" data-c="1" checked> QQQ</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t31" data-c="2" checked> GOOGL</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t31" data-c="3" checked> 2330</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t31" data-c="4" checked> 0050</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t31" data-c="5" checked> VOO</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t31" data-c="6" checked> VTI</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t31" data-c="7" checked> SPY</label>
+  </div>
+  <div class="twrap"><table id="t31">
+    <tr><th>期間</th><th class="n">QQQ</th><th class="n">GOOGL</th><th class="n">2330</th><th class="n">0050</th><th class="n">VOO</th><th class="n">VTI</th><th class="n">SPY</th></tr>
+    <tr><td class="b">1 年</td><td class="n up">+30%</td><td class="n up">+100%</td><td class="n up">+119%</td><td class="n up">+117%</td><td class="n up">+22%</td><td class="n up">+22%</td><td class="n up">+22%</td></tr>
+    <tr><td class="b">3 年</td><td class="n up">+99%</td><td class="n up">+194%</td><td class="n up">+320%</td><td class="n up">+239%</td><td class="n up">+76%</td><td class="n up">+74%</td><td class="n up">+75%</td></tr>
+    <tr><td class="b">5 年</td><td class="n up">+110%</td><td class="n up">+195%</td><td class="n up">+312%</td><td class="n up">+234%</td><td class="n up">+84%</td><td class="n up">+74%</td><td class="n up">+83%</td></tr>
+    <tr><td class="b">10 年</td><td class="n up">+584%</td><td class="n up">+881%</td><td class="n up">+1,637%</td><td class="n up">+730%</td><td class="n up">+309%</td><td class="n up">+292%</td><td class="n up">+306%</td></tr>
+    <tr><td class="b">15 年</td><td class="n up">+1,355%</td><td class="n up">+2,319%</td><td class="n up">+4,360%</td><td class="n up">+925%</td><td class="n">—</td><td class="n up">+620%</td><td class="n up">+656%</td></tr>
+    <tr><td class="b">20 年</td><td class="n up">+1,905%</td><td class="n up">+3,363%</td><td class="n up">約+6,800%</td><td class="n up">約+1,368%</td><td class="n">—</td><td class="n up">+737%</td><td class="n up">+746%</td></tr>
+  </table></div>
+
+  <h2 class="sect" style="margin-top:26px">年化報酬率<span class="hint">含息再投入 · 含大盤對照</span></h2>
+  <div class="note" style="border:none;margin:2px 0 4px;padding-top:2px"><b>互比標的</b>：
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t32" data-c="1" checked> QQQ</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t32" data-c="2" checked> GOOGL</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t32" data-c="3" checked> 2330</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t32" data-c="4" checked> 0050</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t32" data-c="5" checked> VOO</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t32" data-c="6" checked> VTI</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t32" data-c="7" checked> SPY</label>
+  </div>
+  <div class="twrap"><table id="t32">
+    <tr><th>期間</th><th class="n">QQQ</th><th class="n">GOOGL</th><th class="n">2330</th><th class="n">0050</th><th class="n">VOO</th><th class="n">VTI</th><th class="n">SPY</th></tr>
+    <tr><td class="b">1 年</td><td class="n up">30.5%</td><td class="n up">100%</td><td class="n up">119%</td><td class="n up">117%</td><td class="n up">21.8%</td><td class="n up">22.0%</td><td class="n up">21.7%</td></tr>
+    <tr><td class="b">3 年</td><td class="n up">25.8%</td><td class="n up">43.3%</td><td class="n up">61.3%</td><td class="n up">50.1%</td><td class="n up">20.7%</td><td class="n up">20.3%</td><td class="n up">20.6%</td></tr>
+    <tr><td class="b">5 年</td><td class="n up">16.0%</td><td class="n up">24.2%</td><td class="n up">32.7%</td><td class="n up">27.3%</td><td class="n up">13.0%</td><td class="n up">11.8%</td><td class="n up">12.9%</td></tr>
+    <tr><td class="b">10 年</td><td class="n up">21.2%</td><td class="n up">25.7%</td><td class="n up">33.0%</td><td class="n up">23.6%</td><td class="n up">15.1%</td><td class="n up">14.6%</td><td class="n up">15.1%</td></tr>
+    <tr><td class="b">15 年</td><td class="n up">18.9%</td><td class="n up">22.9%</td><td class="n up">28.8%</td><td class="n up">16.8%</td><td class="n">—</td><td class="n up">13.6%</td><td class="n up">14.0%</td></tr>
+    <tr><td class="b">20 年</td><td class="n up">15.8%</td><td class="n up">18.9%</td><td class="n up">約23.6%</td><td class="n up">約14.4%</td><td class="n">—</td><td class="n up">11.0%</td><td class="n up">11.0%</td></tr>
+  </table></div>
+  <div class="note">VOO／VTI／SPY 為大盤對照組，VOO 2010/9 上市故無 15／20 年。QQQ 長期年化贏大盤約 3–5 個百分點，代價是跌時更深。🟡 美股 15／20 年自 2011／2006 年初起算；台股含息為股利再投入估算；⚪ 台股 20 年之 2006 錨點為估計值（證交所 API 僅回溯至 2010）；0050 已調整 2025/6 一拆四。</div>
+</section>
+
+<section class="slide">
+  <h2 class="sect">四次大型危機<span class="hint">美元含息 · 回本時間見表下附註</span></h2>
+  <div class="note" style="border:none;margin:2px 0 4px;padding-top:2px"><b>互比標的</b>：
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t4" data-c="1" checked> QQQ</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t4" data-c="2" checked> GOOGL</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t4" data-c="3" checked> 台積電 ADR</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t4" data-c="4" checked> 0050</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="t4" data-c="5" checked> SPY</label>
+  </div>
+  <div class="twrap"><table id="t4">
+    <tr><th>危機</th><th class="n">QQQ</th><th class="n">GOOGL</th><th class="n">台積電 ADR</th><th class="n">0050</th><th class="n">SPY</th></tr>
+    <tr><td class="b">2000–02 網路泡沫（3 年累計）</td><td class="n dn"><b>−73%</b></td><td class="n">未上市</td><td class="n dn"><b>−69%</b></td><td class="n">未上市</td><td class="n dn">−37.5%</td></tr>
+    <tr><td class="b">2008 金融海嘯</td><td class="n dn">−41.7%</td><td class="n dn">−55.5%</td><td class="n dn"><b>−16.9%</b>（最抗跌）</td><td class="n dn">約−43%</td><td class="n dn">−36.8%</td></tr>
+    <tr><td class="b">2020 疫情（全年）</td><td class="n up">+48.6%</td><td class="n up">+30.9%</td><td class="n up">+92.7%</td><td class="n up">約+31%</td><td class="n up">+18.3%</td></tr>
+    <tr><td class="b">2022 升息空頭</td><td class="n dn">−32.6%</td><td class="n dn">−39.1%</td><td class="n dn">−36.8%</td><td class="n dn">約−21.8%</td><td class="n dn">−18.2%</td></tr>
+  </table></div>
+  <div class="note">2020 年 3 月一個月內全部急殺 25–30%，5–6 個月收復，全年反而大賺（V 型特例）。<br>
+  回本時間：2000 高點 all-in 約 <b>15 年</b>（QQQ 至 2015）｜2008 高點約 3–4 年｜2022 高點約 2 年｜2020 疫情約 6 個月。<br>
+  最大回檔：QQQ −83%（2000–02）、GOOGL −65%（2008）、台積電 ADR −56%（2022）、SPY −55%（2008）。<br>
+  大盤對照：每次危機 SPY 都跌得比 QQQ 淺（2000–02 差距最大：−37.5% vs −73%）——分散產業的防禦價值在空頭才看得到；VTI／VOO 與 SPY 幾乎同步。</div>
+</section>
+
+<section class="slide">
+  <h2 class="sect">逐年報酬率 2000–2026<span class="hint">含息 · 附該年重大事件</span></h2>
+  <div class="note" style="border:none;margin:2px 0 4px;padding-top:2px"><b>互比標的</b>：
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="annual" data-c="1" checked> QQQ</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="annual" data-c="2" checked> GOOGL</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="annual" data-c="3" checked> 2330</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="annual" data-c="4" checked> 0050</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="annual" data-c="5" checked> VOO</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="annual" data-c="6" checked> VTI</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="annual" data-c="7" checked> SPY</label>
+    <label style="margin-right:11px;white-space:nowrap"><input type="checkbox" class="colck" data-t="annual" data-c="8" checked> 事件</label>
+  </div>
+  <div class="twrap"><table id="annual">
+    <tr><th>年份</th><th class="n">QQQ</th><th class="n">GOOGL</th><th class="n">台積電 2330</th><th class="n">0050</th><th class="n">VOO</th><th class="n">VTI</th><th class="n">SPY</th><th class="evt">該年重大事件</th></tr>
+    <tr><td class="b">2000</td><td class="n">-36.1</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">-9.7</td><td class="evt">網路泡沫破裂、Fed 升息到頂；那指自高點崩跌</td></tr>
+    <tr><td class="b">2001</td><td class="n">-33.3</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">-7.3</td><td class="n">-11.8</td><td class="evt">911 恐攻、美國衰退；台積電 ADR 該年逆勢 +39%（VTI 5 月上市）</td></tr>
+    <tr><td class="b">2002</td><td class="n">-37.4</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">-20.5</td><td class="n">-21.6</td><td class="evt">泡沫餘波＋安隆/世通弊案，連跌第三年（QQQ 三年累計 −73%）</td></tr>
+    <tr><td class="b">2003</td><td class="n">+49.7</td><td class="n">—</td><td class="n">—</td><td class="n">6月上市</td><td class="n">—</td><td class="n">+30.7</td><td class="n">+28.2</td><td class="evt">SARS、伊拉克戰爭結束後 V 轉；0050 於 6 月掛牌</td></tr>
+    <tr><td class="b">2004</td><td class="n">+10.5</td><td class="n">+92.2</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">+12.8</td><td class="n">+10.7</td><td class="evt">Google 8 月 IPO（85 美元）；Fed 開始升息循環</td></tr>
+    <tr><td class="b">2005</td><td class="n">+1.6</td><td class="n">+115.2</td><td class="n">—</td><td class="n">+10.5</td><td class="n">—</td><td class="n">+6.3</td><td class="n">+4.8</td><td class="evt">Google 上市後狂飆翻倍；油價創新高</td></tr>
+    <tr><td class="b">2006</td><td class="n">+7.1</td><td class="n">+11.0</td><td class="n">—</td><td class="n">+20.6</td><td class="n">—</td><td class="n">+15.7</td><td class="n">+15.9</td><td class="evt">Fed 結束升息、全球多頭；5-6 月新興市場急殺後收復</td></tr>
+    <tr><td class="b">2007</td><td class="n">+19.0</td><td class="n">+50.2</td><td class="n">—</td><td class="n">+11.2</td><td class="n">—</td><td class="n">+5.4</td><td class="n">+5.2</td><td class="evt">iPhone 問世；下半年次貸風暴浮現，10 月全球見頂</td></tr>
+    <tr><td class="b">2008</td><td class="n">-41.7</td><td class="n">-55.5</td><td class="n">約-24</td><td class="n">-43.1</td><td class="n">—</td><td class="n">-37.0</td><td class="n">-36.8</td><td class="evt">雷曼倒閉、全球金融海嘯；台積電靠獨佔地位與股息最抗跌（ADR 僅 −17）</td></tr>
+    <tr><td class="b">2009</td><td class="n">+54.7</td><td class="n">+101.5</td><td class="n">約+52</td><td class="n">+73.9</td><td class="n">—</td><td class="n">+28.9</td><td class="n">+26.4</td><td class="evt">QE1 救市、3 月見底 V 型反彈——危機隔年最肥</td></tr>
+    <tr><td class="b">2010</td><td class="n">+19.9</td><td class="n">-4.2</td><td class="n">約+15</td><td class="n">+12.9</td><td class="n">9月上市</td><td class="n">+17.4</td><td class="n">+15.1</td><td class="evt">希臘歐債危機爆發、QE2；Google 退出中國</td></tr>
+    <tr><td class="b">2011</td><td class="n">+3.4</td><td class="n">+8.7</td><td class="n">約+11</td><td class="n">-15.8</td><td class="n">+1.9</td><td class="n">+1.0</td><td class="n">+1.9</td><td class="evt">美債遭降評、歐債惡化、311 日本地震；台股電子業景氣下行</td></tr>
+    <tr><td class="b">2012</td><td class="n">+18.1</td><td class="n">+9.5</td><td class="n">約+32</td><td class="n">+12.4</td><td class="n">+16.0</td><td class="n">+16.5</td><td class="n">+16.0</td><td class="evt">歐央行「不惜一切代價」、QE3；台積電 28nm 大放異彩</td></tr>
+    <tr><td class="b">2013</td><td class="n">+36.6</td><td class="n">+58.4</td><td class="n">約+12</td><td class="n">+11.6</td><td class="n">+32.4</td><td class="n">+33.5</td><td class="n">+32.3</td><td class="evt">安倍經濟學、Fed 縮減恐慌（Taper Tantrum）</td></tr>
+    <tr><td class="b">2014</td><td class="n">+19.2</td><td class="n">-5.4</td><td class="n">約+36</td><td class="n">+16.7</td><td class="n">+13.6</td><td class="n">+12.6</td><td class="n">+13.5</td><td class="evt">油價腰斬、美元走強；Google 股票分割（GOOG/GOOGL）</td></tr>
+    <tr><td class="b">2015</td><td class="n">+9.4</td><td class="n">+46.6</td><td class="n">約+5</td><td class="n">-6.3</td><td class="n">+1.3</td><td class="n">+0.4</td><td class="n">+1.2</td><td class="evt">人民幣貶值八月股災、Fed 十年來首次升息；Google 改組為 Alphabet</td></tr>
+    <tr><td class="b">2016</td><td class="n">+7.1</td><td class="n">+1.9</td><td class="n">+31</td><td class="n">+19.7</td><td class="n">+12.2</td><td class="n">+12.8</td><td class="n">+12.0</td><td class="evt">英國脫歐、川普當選；台積電獨拿 iPhone A10 訂單</td></tr>
+    <tr><td class="b">2017</td><td class="n">+32.7</td><td class="n">+32.9</td><td class="n">+30</td><td class="n">+18.1</td><td class="n">+21.8</td><td class="n">+21.2</td><td class="n">+21.7</td><td class="evt">全球同步擴張、波動率史上最低的一年</td></tr>
+    <tr><td class="b">2018</td><td class="n">-0.1</td><td class="n">-0.8</td><td class="n">+2</td><td class="n">-4.9</td><td class="n">-4.5</td><td class="n">-5.2</td><td class="n">-4.6</td><td class="evt">中美貿易戰開打、Fed 連四升；Q4 急殺近 −20% 後年底止跌</td></tr>
+    <tr><td class="b">2019</td><td class="n">+39.0</td><td class="n">+28.2</td><td class="n">+52</td><td class="n">+33.5</td><td class="n">+31.4</td><td class="n">+30.7</td><td class="n">+31.2</td><td class="evt">貿易戰緩和、Fed 轉降息；台積電 7nm 獨家量產吃下蘋果華為</td></tr>
+    <tr><td class="b">2020</td><td class="n">+48.6</td><td class="n">+30.9</td><td class="n">+63</td><td class="n">+31.1</td><td class="n">+18.3</td><td class="n">+21.1</td><td class="n">+18.3</td><td class="evt">COVID 疫情：3 月四次熔斷急殺 30%，無限 QE 後 V 轉；宅經濟+晶片需求爆發</td></tr>
+    <tr><td class="b">2021</td><td class="n">+27.4</td><td class="n">+65.3</td><td class="n">+18</td><td class="n">+21.8</td><td class="n">+28.8</td><td class="n">+25.7</td><td class="n">+28.7</td><td class="evt">大放水尾聲、全球晶片荒；通膨升溫埋下隔年禍根</td></tr>
+    <tr><td class="b">2022</td><td class="n">-32.6</td><td class="n">-39.1</td><td class="n">-25</td><td class="n">-21.8</td><td class="n">-18.2</td><td class="n">-19.5</td><td class="n">-18.2</td><td class="evt">Fed 暴力升息 17 碼、俄烏戰爭；科技股估值全面下修</td></tr>
+    <tr><td class="b">2023</td><td class="n">+54.9</td><td class="n">+58.3</td><td class="n">+35</td><td class="n">約+29</td><td class="n">+26.3</td><td class="n">+26.1</td><td class="n">+26.2</td><td class="evt">ChatGPT 引爆 AI 浪潮、NVDA 領漲——又是危機隔年最肥</td></tr>
+    <tr><td class="b">2024</td><td class="n">+25.6</td><td class="n">+36.0</td><td class="n">+84</td><td class="n">約+49</td><td class="n">+25.0</td><td class="n">+23.8</td><td class="n">+24.9</td><td class="evt">AI 資本支出大爆發、台積電台幣價近翻倍；CoWoS 供不應求</td></tr>
+    <tr><td class="b">2025</td><td class="n">+20.8</td><td class="n">+66.0</td><td class="n">+46</td><td class="n">+36.6</td><td class="n">+17.8</td><td class="n">+17.1</td><td class="n">+17.7</td><td class="evt">AI 超級循環延續、台股大漲；0050 六月一拆四；GOOGL 靠 Gemini 重評價</td></tr>
+    <tr><td class="b">2026 YTD</td><td class="n">+13.1</td><td class="n">+14.0</td><td class="n">+46</td><td class="n">+55.1</td><td class="n">+6.7</td><td class="n">+7.1</td><td class="n">+6.7</td><td class="evt">Q1 那指近修正（一度 −9%）；美伊衝突 4 月停火後創高、6 月再緊張＋Fed 升息疑慮（6/11 台股單日 −3.3%）</td></tr>
+  </table></div>
+  <div class="note">台積電 2330 為台幣含息：2016 起依證交所年末收盤＋現金股利計算 🟢；2008–15 依公開年末收盤＋股利推算 🟡（標「約」）；2000–07 為配股年代、無可靠台幣含息序列故留空（美元版可參考危機表的 ADR）。0050：2005–2024 取公開紀錄、2025 起依官方收盤計算。大約每 7–8 年一次 −30% 以上重摔；危機隔年通常最肥。好年 QQQ 贏 SPY 約 10–25 個百分點、壞年多跌 10–15 個百分點——超額報酬是用波動換的。<br><br>
+  <span class="zone z0">來源</span>　TotalRealReturns（美股含息）· 證交所 STOCK_DAY API（2330/0050 官方收盤）· StockAnalysis（股利與交叉驗證）· 製表 2026/6/12</div>
+</section>
+
+</div>
+
+</div>
+<script>
+const f0=n=>isFinite(n)?Math.round(n).toLocaleString():'—';
+function showView(v){
+  document.getElementById('view-tool').style.display=v==='tool'?'':'none';
+  document.getElementById('view-returns').style.display=v==='returns'?'':'none';
+  document.getElementById('tab-tool').className='tab'+(v==='tool'?' on':'');
+  document.getElementById('tab-returns').className='tab'+(v==='returns'?' on':'');
+}
+/* ───────── ① 配置（定稿：QQQ30 VOO25 GOOGL20 2330·15 0050·10，不含現金） ───────── */
+const ASSETS=[['qqq','QQQ','#0d9488','us',30],['voo','VOO','#3a8f6f','us',25],['googl','GOOGL','#14b8a6','us',20],
+  ['t2330','台積電 2330','#bd8420','tw',15],['t0050','元大 0050','#d9a35b','tw',10]];
+const KEYS=ASSETS.map(a=>a[0]);
+const A={};ASSETS.forEach(a=>A[a[0]]=a[4]);
+function gv(id){return parseFloat(document.getElementById(id).value)||0;}
+function buildAlloc(){
+  const wrap=document.getElementById('allocrows');wrap.innerHTML='';
+  ASSETS.forEach(a=>{
+    const row=document.createElement('div');row.className='arow';
+    row.innerHTML='<div class="nm"><span class="dot" style="background:'+a[2]+'"></span>'+a[1]+'</div>'+
+      '<input type="range" min="0" max="100" step="1" value="'+a[4]+'" id="r_'+a[0]+'">'+
+      '<div class="out" id="o_'+a[0]+'">—</div>';
+    wrap.appendChild(row);
+  });
+  ASSETS.forEach(a=>{document.getElementById('r_'+a[0]).addEventListener('input',e=>{A[a[0]]=parseFloat(e.target.value)||0;recalcAlloc();});});
+}
+function recalcAlloc(){
+  const fund=gv('fund');const fx=gv('fx')||32;
+  const hold=KEYS.reduce((s,k)=>s+A[k],0);
+  ASSETS.forEach(a=>{const pv=A[a[0]];const amt=fund*pv/100;
+    document.getElementById('o_'+a[0]).innerHTML='<span class="o1"><b>'+(+pv.toFixed(0))+'%</b></span>'+
+      '<span class="o2">$'+f0(amt)+'</span>'+
+      '<span class="o3">'+(a[3]==='us'?'≈US$'+f0(amt/fx):'')+'</span>';});
+  const bar=document.getElementById('allocbar');bar.innerHTML='';
+  ASSETS.forEach(a=>{const w=Math.max(0,A[a[0]]);if(w<=0)return;const d=document.createElement('div');d.className='seg';
+    const nm=a[1].replace('台積電 ','').replace('元大 ','');
+    d.style.width=(w/Math.max(hold,1)*100)+'%';d.style.background=a[2];d.style.flexDirection='column';
+    d.innerHTML=(w>=9?'<span class="s1">'+nm+' '+(+w.toFixed(0))+'%</span><span class="s2">$'+f0(fund*w/100)+'</span>':'<span class="s1">'+(+w.toFixed(0))+'%</span>');
+    bar.appendChild(d);});
+  const us=A.qqq+A.voo+A.googl,tw=A.t2330+A.t0050;
+  const gb=document.getElementById('groupbar');gb.innerHTML='';
+  [['美股',us,'#0d9488'],['台股',tw,'#bd8420']].forEach(g=>{if(g[1]<=0)return;const d=document.createElement('div');d.className='seg';
+    d.style.width=(g[1]/Math.max(hold,1)*100)+'%';d.style.background=g[2];
+    d.textContent=g[0]+' '+(+g[1].toFixed(0))+'% $'+f0(fund*g[1]/100);gb.appendChild(d);});
+  const expT=A.t2330+A.t0050*0.57;
+  const expG=A.googl+A.qqq*0.05+A.voo*0.035;
+  document.getElementById('tsmc_exp').textContent=(+expT.toFixed(1))+'%';
+  document.getElementById('tsmc_amt').textContent='$'+f0(fund*expT/100);
+  document.getElementById('googl_exp').textContent=(+expG.toFixed(1))+'%';
+  document.getElementById('googl_amt').textContent='$'+f0(fund*expG/100);
+  document.getElementById('sumwarn').innerHTML=Math.abs(hold-100)>0.01?'<div class="warnbox">⚠ 持股合計 '+(+hold.toFixed(0))+'%，不是 100%（比例不含現金，五檔應加總 100）。</div>':'';
+  recalcPlan();
+}
+function resetAlloc(){
+  document.getElementById('fund').value=1000000;
+  ASSETS.forEach(a=>{A[a[0]]=a[4];const s=document.getElementById('r_'+a[0]);if(s)s.value=a[4];});
+  recalcAlloc();
+}
+/* ───────── ② 分批進場：4 批 × 25%，事件錨定（2026/6/12 定案） ───────── */
+const PLAN_DEF=[
+  {d:'2026-06-12',pct:25,note:'已開始進場，需補齊至 25%'},
+  {d:'2026-06-22',pct:25,note:'FOMC(6/18)＋四巫日(6/19) 後第一個交易日'},
+  {d:'2026-07-06',pct:25,note:'機械式執行：到點就買，不看價格'},
+  {d:'2026-07-20',pct:25,note:'完成建倉，落在 7 月財報季前'}];
+const LSKEY='erick_plan_2026_v3';
+let S={dates:PLAN_DEF.map(p=>p.d),open:[true,false,false,false],fills:{},hideF:false};
+try{const sv=JSON.parse(localStorage.getItem(LSKEY));if(sv&&sv.dates)S=Object.assign(S,sv);}catch(e){}
+function save(){try{localStorage.setItem(LSKEY,JSON.stringify(S));}catch(e){}}
+const STL={wait:['待執行','st-wait'],due:['今日應執行','st-due'],part:['部分執行','st-part'],done:['已執行','st-done']};
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function fkey(i,k){return i+'_'+k;}
+function getFill(i,k){return S.fills[fkey(i,k)]||{};}
+function togglePlan(i){
+  S.open[i]=!S.open[i];save();
+  const bd=document.getElementById('bd_'+i);if(bd)bd.style.display=S.open[i]?'':'none';
+  const tg=document.getElementById('tg_'+i);if(tg)tg.textContent=S.open[i]?'▲ 收合':'▼ 展開填買入';
+}
+function toggleHide(){S.hideF=!S.hideF;save();recalcPlan();}
+/* ③④⑤ 收折（預設收起） */
+let SECS={mkt:false,view:false,next:false};
+try{const sv2=JSON.parse(localStorage.getItem('erick_secs_v1'));if(sv2)SECS=Object.assign(SECS,sv2);}catch(e){}
+function applySecs(){['mkt','view','next'].forEach(s=>{
+  const b=document.getElementById('sb_'+s);if(b)b.style.display=SECS[s]?'':'none';
+  const c=document.getElementById('ca_'+s);if(c)c.textContent=SECS[s]?'▾':'▸';});}
+function toggleSec(s){SECS[s]=!SECS[s];try{localStorage.setItem('erick_secs_v1',JSON.stringify(SECS));}catch(e){}applySecs();}
+function buildPlan(){
+  const w=document.getElementById('batchwrap');w.innerHTML='';
+  PLAN_DEF.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='bk';d.id='bk_'+i;
+    let rows='';
+    ASSETS.forEach(a=>{const k=a[0];const us=a[3]==='us';const f=getFill(i,k);
+      rows+='<tr><td class="b" style="color:'+a[2]+'">'+a[1].replace('台積電 ','').replace('元大 ','')+(us?' <span class="mut" style="font-size:10px;font-weight:700">US$</span>':'')+'</td>'+
+        '<td class="n" id="ft_'+i+'_'+k+'">—</td>'+
+        '<td class="n"><input type="number" class="smin" data-fi="'+i+'" data-fk="'+k+'" data-ff="p" value="'+(f.p==null?'':f.p)+'" step="any" min="0"></td>'+
+        '<td class="n"><input type="number" class="smin" data-fi="'+i+'" data-fk="'+k+'" data-ff="s" value="'+(f.s==null?'':f.s)+'" step="any" min="0"></td>'+
+        '<td class="n" id="fv_'+i+'_'+k+'">—</td>'+
+        '<td class="n b" id="fa_'+i+'_'+k+'">—</td></tr>';
+    });
+    d.innerHTML='<div class="bkhd"><span class="bn">第 '+(i+1)+' 批 · 25%</span>'+
+      '<span class="bkf">日期 <input type="date" data-pi="'+i+'" value="'+S.dates[i]+'"></span>'+
+      '<span class="zone" id="bz_'+i+'"></span>'+
+      '<button class="btn ghost" style="margin-left:auto;flex:0 0 auto" id="tg_'+i+'" onclick="togglePlan('+i+')">'+(S.open[i]?'▲ 收合':'▼ 展開填買入')+'</button>'+
+      '<span class="amt"><span id="binv_'+i+'">$0</span><div class="s">本批已投入 / 目標 <b id="bamt_'+i+'">—</b></div></span></div>'+
+      '<div class="bknote">'+p.note+'　·　全組合累計應達 <b id="bcum_'+i+'">—</b></div>'+
+      '<div id="bviz_'+i+'"></div>'+
+      '<div id="bd_'+i+'" style="display:'+(S.open[i]?'':'none')+'">'+
+      '<table style="margin-top:6px"><tr><th>標的</th><th class="n">本批目標</th><th class="n">成交均價</th><th class="n">買入股數</th><th class="n">已投入</th><th class="n">達成</th></tr>'+rows+'</table>'+
+      '<div class="note" style="margin-top:6px;border:none;padding-top:0">同一批可分多筆買進：填「這批累計的均價與總股數」即可；美股填美元價，台幣自動換算。</div></div>';
+    w.appendChild(d);
+  });
+  w.querySelectorAll('input[type=date]').forEach(inp=>inp.addEventListener('input',e=>{
+    S.dates[+e.target.dataset.pi]=e.target.value;save();recalcPlan();}));
+  w.querySelectorAll('input[data-ff]').forEach(inp=>inp.addEventListener('input',e=>{
+    const key=fkey(+e.target.dataset.fi,e.target.dataset.fk);
+    const o=S.fills[key]||(S.fills[key]={});
+    o[e.target.dataset.ff]=e.target.value===''?null:parseFloat(e.target.value);
+    save();recalcPlan();}));
+  buildHold();
+}
+function recalcPlan(){
+  const fund=gv('fund');const fx=gv('fx')||32;const today=todayStr();
+  const hold=KEYS.reduce((s,k)=>s+A[k],0)||100;
+  let next=null;
+  PLAN_DEF.forEach((p,i)=>{
+    const tgtB=fund*0.25;
+    const ae=document.getElementById('bamt_'+i);if(ae)ae.textContent='$'+f0(tgtB);
+    const cu=document.getElementById('bcum_'+i);if(cu)cu.textContent='$'+f0(fund*0.25*(i+1));
+    let inv=0;const viMap={};
+    ASSETS.forEach(a=>{const k=a[0];const us=a[3]==='us';
+      const tgtT=tgtB*A[k]/hold;
+      const ft=document.getElementById('ft_'+i+'_'+k);
+      if(ft)ft.innerHTML='$'+f0(tgtT)+(us?' <span class="mut" style="font-size:11px">US$'+f0(tgtT/fx)+'</span>':'');
+      const f=getFill(i,k);
+      const vi=(f.p>0&&f.s>0)?f.p*f.s*(us?fx:1):0;inv+=vi;viMap[k]=vi;
+      const fv=document.getElementById('fv_'+i+'_'+k);if(fv)fv.textContent=vi>0?'$'+f0(vi):'—';
+      const fa=document.getElementById('fa_'+i+'_'+k);
+      if(fa){if(vi<=0){fa.textContent='—';fa.className='n b';}
+        else{const pc=tgtT>0?vi/tgtT*100:0;fa.textContent=pc.toFixed(0)+'%';
+          fa.className='n b '+(pc>=98?'dn':'');}}
+    });
+    const ach=tgtB>0?inv/tgtB*100:0;
+    /* 可視化：每檔一條「目標 vs 已買入」進度列 */
+    const viz=document.getElementById('bviz_'+i);
+    if(viz){
+      let rows2='';
+      ASSETS.forEach(a=>{const k=a[0];const us=a[3]==='us';
+        const tgtT=tgtB*A[k]/hold;
+        const vi=viMap[k]||0;
+        const pc=tgtT>0?vi/tgtT*100:0;
+        const over=pc>102;
+        const fillW=Math.min(pc,100);
+        const fillC=over?'var(--up)':a[2];
+        const nm=a[1].replace('台積電 ','').replace('元大 ','');
+        rows2+='<div class="prow">'+
+          '<span class="pnm" style="color:'+a[2]+'">'+nm+'</span>'+
+          '<span class="pbar"><div style="width:'+fillW+'%;background:'+fillC+'"></div></span>'+
+          '<span class="ppct"'+(over?' style="color:var(--up)"':(pc>=98?' style="color:var(--dn)"':''))+'>'+pc.toFixed(0)+'%'+(over?' 超買':'')+'</span>'+
+          '<span class="pamt">$'+f0(vi)+' / $'+f0(tgtT)+'</span></div>';
+      });
+      rows2+='<div class="prow" style="border-top:1px dashed var(--line);padding-top:7px;margin-top:8px">'+
+        '<span class="pnm">合計</span>'+
+        '<span class="pbar"><div style="width:'+Math.min(ach,100)+'%;background:var(--accent)"></div></span>'+
+        '<span class="ppct">'+ach.toFixed(0)+'%</span>'+
+        '<span class="pamt">$'+f0(inv)+' / $'+f0(tgtB)+'</span></div>';
+      viz.innerHTML='<div style="margin:10px 0 2px">'+rows2+'</div>';
+    }
+    const be=document.getElementById('binv_'+i);if(be)be.textContent='$'+f0(inv);
+    const st=ach>=97?'done':(ach>0?'part':'wait');
+    const due=(st!=='done'&&S.dates[i]<=today);
+    const card=document.getElementById('bk_'+i);const bz=document.getElementById('bz_'+i);
+    if(card){card.className='bk'+(st==='done'?' done':(due?' duedate':''));
+      card.style.display=(S.hideF&&inv<=0&&S.dates[i]>today)?'none':'';}
+    if(bz){const lb=st==='done'?STL.done:(st==='part'?[STL.part[0]+' '+ach.toFixed(0)+'%',STL.part[1]]:(due?STL.due:STL.wait));
+      bz.textContent=lb[0];bz.className='zone '+lb[1];}
+    if(next===null&&st!=='done')next=i;
+  });
+  const nb=document.getElementById('nextbatch');
+  if(nb)nb.textContent=next===null?'已全部執行完畢 ✓':'第 '+(next+1)+' 批 · '+S.dates[next];
+  const hb=document.getElementById('hidebtn');
+  if(hb)hb.textContent=S.hideF?'▦ 顯示全部批次':'▦ 隱藏未到期批次';
+  recalcHold();
+}
+/* 持倉追蹤（均價＋股數，浮動買入）＋例外條款監測 */
+const MKTMAP={t2330:'台積電 2330',t0050:'元大 0050',qqq:'QQQ',voo:'VOO',googl:'GOOGL'};
+function curPrice(k){const nm=MKTMAP[k];const m=MKT.find(x=>x[0]===nm);return m?m[2]:null;}
+function buildHold(){
+  const tb=document.getElementById('holdbody');if(!tb)return;tb.innerHTML='';
+  ASSETS.forEach(a=>{
+    const k=a[0];const us=a[3]==='us';
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td class="b">'+a[1]+(us?' <span class="mut" style="font-size:11px;font-weight:600">US$</span>':'')+'</td>'+
+      '<td id="gt_'+k+'">—</td>'+
+      '<td id="pos_'+k+'">—</td>'+
+      '<td id="inv_'+k+'">—</td>'+
+      '<td class="b" id="pl_'+k+'">—</td>'+
+      '<td class="b" id="ach_'+k+'">—</td>';
+    tb.appendChild(tr);
+  });
+}
+function recalcHold(){
+  const fund=gv('fund'),fx=gv('fx')||32;
+  let cost=0,val=0;
+  ASSETS.forEach(a=>{
+    const k=a[0];const us=a[3]==='us';const mult=us?fx:1;
+    /* 由各批次買入彙總 */
+    let sh=0,tc=0;
+    PLAN_DEF.forEach((p,i)=>{const f=getFill(i,k);if(f.p>0&&f.s>0){sh+=f.s;tc+=f.p*f.s;}});
+    const avg=sh>0?tc/sh:null;const cur=curPrice(k);
+    const tgt=fund*A[k]/100;
+    const inv=tc*mult;
+    const cv=(isFinite(cur)&&cur>0&&sh>0)?cur*sh*mult:0;
+    const pe2=document.getElementById('pos_'+k);
+    if(pe2)pe2.innerHTML=sh>0?'<b>'+(+avg.toFixed(avg>=100?0:2)).toLocaleString()+'</b><div style="font-size:11px;color:var(--mut);font-weight:700;line-height:1.3">'+(+sh.toFixed(2)).toLocaleString()+' 股</div>':'—';
+    const ge=document.getElementById('gt_'+k);if(ge)ge.innerHTML='<b>'+(+A[k].toFixed(0))+'%</b>';
+    const ie=document.getElementById('inv_'+k);if(ie)ie.textContent=inv>0?'$'+f0(inv):'—';
+    const pe=document.getElementById('pl_'+k);
+    if(pe){if(avg>0&&isFinite(cur)&&cur>0){const pl=(cur/avg-1)*100;
+      pe.textContent=(pl>=0?'+':'−')+Math.abs(pl).toFixed(1)+'%';pe.className='n b '+(pl>=0?'up':'dn');}
+      else{pe.textContent='—';pe.className='n b';}}
+    const ach2=tgt>0?inv/tgt*100:0;const diff=tgt-inv;
+    const ae2=document.getElementById('ach_'+k);
+    if(ae2){const tipTxt='目標 $'+f0(tgt)+(ach2>102?'｜超買 $'+f0(-diff):(ach2>=98?'｜✓ 達標':'｜還差 $'+f0(diff)));
+      ae2.innerHTML='<span class="tip'+(ach2>102?' up':(ach2>=98?' dn':''))+'" tabindex="0" data-tip="'+tipTxt+'">'+ach2.toFixed(0)+'%</span>';
+      ae2.className='n b';}
+    if(inv>0){cost+=inv;val+=cv;}
+  });
+  /* 總體買入達成率 vs 應達進度 */
+  const pb=document.getElementById('progbox');
+  if(pb){const fund2=gv('fund');const today=todayStr();
+    let dueN=0;PLAN_DEF.forEach((p,i)=>{if(S.dates[i]<=today)dueN++;});
+    const expPct=dueN*25;const actPct=fund2>0?cost/fund2*100:0;const lag=actPct-expPct;
+    pb.innerHTML='<div style="margin:14px 0 4px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:4px">'+
+      '<span style="display:flex;align-items:baseline;gap:10px"><span style="font-size:14.5px;font-weight:800">部位建置進度</span><b style="font-size:20px">'+actPct.toFixed(1)+'%</b><span class="mut" style="font-weight:700;font-size:13px">$'+f0(cost)+' / $'+f0(fund2)+'</span></span>'+
+      '<span class="mut" style="font-size:13px;font-weight:700">應達進度（第 '+dueN+' 批到期）<b style="color:var(--ink);font-size:15px;margin-left:6px">'+expPct+'%</b></span></div>'+
+      '<div style="position:relative;height:18px;border-radius:9px;background:var(--line);overflow:hidden">'+
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:'+Math.min(100,actPct)+'%;background:var(--accent);border-radius:9px"></div>'+
+      '<div style="position:absolute;left:'+Math.min(100,expPct)+'%;top:-2px;bottom:-2px;width:3px;background:var(--up)"></div></div>'+
+      '<div style="font-size:13px;margin-top:7px;font-weight:700;color:'+(lag>=-2?'var(--dn)':'var(--amb)')+'">'+
+      (lag>=-2?'✓ 進度正常（'+(lag>=0?'+':'')+lag.toFixed(1)+'pp）':'⚠ 落後應達進度 '+(-lag).toFixed(1)+'pp — 紅線是現在該到的位置')+'</div></div>';}
+  const box=document.getElementById('pnlbox');if(!box)return;
+  if(cost<=0||val<=0){box.innerHTML='<div class="note" style="border:none;padding-top:2px">填入各標的成交均價與股數後，自動計算已投入、達成率、損益與例外條款。</div>';return;}
+  const port=(val/cost-1)*100;
+  if(port<=-10)box.innerHTML='<div class="warnbox">🚨 例外條款觸發：組合相對成本 '+port.toFixed(1)+'%（≤ −10%）→ 立即提前執行下一批！（後續日期不變）</div>';
+  else box.innerHTML='<div class="okbox">組合損益：'+(port>=0?'+':'')+port.toFixed(1)+'%（成本 $'+f0(cost)+' → 現值 $'+f0(val)+'）— 未觸發例外條款（門檻 −10%）。</div>';
+}
+function resetPlan(){
+  if(!confirm('重設分批計畫的日期與所有買入紀錄？'))return;
+  S={dates:PLAN_DEF.map(p=>p.d),open:[true,false,false,false],fills:{}};
+  save();buildPlan();recalcPlan();
+}
+/* ───────── ③ 多市場位階 自動抓價 ───────── */
+let MKT=[['加權指數','^TWII',43226,46459],['那斯達克','^IXIC',null,null],['費半 SOX','^SOX',null,null],
+  ['台積電 2330','2330.TW',2255,2440],['元大 0050','0050.TW',100.25,107.85],['QQQ','QQQ',693.69,null],['VOO','VOO',678.00,null],['GOOGL','GOOGL',356.38,null]];
+function buildMkt(){
+  const tb=document.getElementById('mktbody');tb.innerHTML='';
+  MKT.forEach((m,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td class="b">'+m[0]+'<span class="qa" id="mq_'+i+'"></span></td>'+
+      '<td><input type="number" class="smin" data-mi="'+i+'" data-mf="2" value="'+(m[2]==null?'':m[2])+'" step="any" style="text-align:center;width:96px"></td>'+
+      '<td><input type="number" class="smin" data-mi="'+i+'" data-mf="3" value="'+(m[3]==null?'':m[3])+'" step="any" style="text-align:center;width:96px"></td>'+
+      '<td class="b" id="md_'+i+'">—</td><td id="mz_'+i+'">—</td>';
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',e=>{const v=e.target.value;MKT[+e.target.dataset.mi][+e.target.dataset.mf]=v===''?null:parseFloat(v);recalcMkt();}));
+  recalcMkt();
+}
+function recalcMkt(){
+  MKT.forEach((m,i)=>{
+    const cur=m[2],hi=m[3];const de=document.getElementById('md_'+i),ze=document.getElementById('mz_'+i);
+    if(!de||!ze)return;
+    if(!isFinite(cur)||!isFinite(hi)||hi<=0){de.textContent='—';de.className='n b';ze.innerHTML='<span class="zone z0">待補</span>';return;}
+    const drop=(hi-cur)/hi*100;
+    de.textContent=(drop>=0?'−':'+')+Math.abs(drop).toFixed(1)+'%';de.className='n b '+(drop>=0?'dn':'up');
+    let z='<span class="zone z0">觀望</span>';
+    if(drop>=15)z='<span class="zone z2">重挫 ≥15%</span>';else if(drop>=10)z='<span class="zone z2">深回檔 ≥10%</span>';else if(drop>=8)z='<span class="zone z1">留意 8–10%</span>';
+    ze.innerHTML=z;
+  });
+  recalcHold();
+}
+const PROXIES=['https://api.allorigins.win/raw?url=','https://corsproxy.io/?url=','https://api.codetabs.com/v1/proxy/?quest='];
+async function yget(sym){
+  const url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(sym)+'?range=1mo&interval=1d';
+  for(const px of PROXIES){
+    try{const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),7000);
+      const res=await fetch(px+encodeURIComponent(url),{signal:ctrl.signal});clearTimeout(to);
+      const j=await res.json();const r=j&&j.chart&&j.chart.result&&j.chart.result[0];if(!r)continue;
+      const price=r.meta&&r.meta.regularMarketPrice;
+      let highs=[];try{highs=r.indicators.quote[0].high.filter(x=>x!=null);}catch(e){}
+      const hi=highs.length?Math.max.apply(null,highs.concat([price||0])):price;
+      if(isFinite(price))return{price:price,high:hi};
+    }catch(e){}
+  }
+  return null;
+}
+async function fetchMkt(){
+  const st=document.getElementById('mkstatus');st.textContent='　自動抓價中…';let ok=0;
+  for(let i=0;i<MKT.length;i++){
+    const r=await yget(MKT[i][1]);const q=document.getElementById('mq_'+i);
+    if(r){MKT[i][2]=Math.round(r.price*100)/100;MKT[i][3]=Math.round(r.high*100)/100;
+      const ri=document.querySelector('input[data-mi="'+i+'"][data-mf="2"]');if(ri)ri.value=MKT[i][2];
+      const hii=document.querySelector('input[data-mi="'+i+'"][data-mf="3"]');if(hii)hii.value=MKT[i][3];
+      if(q)q.textContent='🟢';ok++;}
+    else{if(q)q.textContent='⚪';}
+    recalcMkt();
+  }
+  st.textContent='　更新 '+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})+'（'+ok+'/'+MKT.length+'）';
+}
+document.getElementById('fund').addEventListener('input',()=>{recalcAlloc();});
+document.getElementById('fx').addEventListener('input',()=>{recalcAlloc();});
+buildAlloc();buildPlan();buildMkt();recalcAlloc();applySecs();
+fetchMkt();
+/* 報酬率總表分頁：互比勾選（各表獨立） */
+document.querySelectorAll('.colck').forEach(function(ck){
+  ck.addEventListener('change',function(){
+    var tb=document.getElementById(this.dataset.t);if(!tb)return;
+    var c=+this.dataset.c,show=this.checked;
+    Array.from(tb.rows).forEach(function(tr){var cell=tr.cells[c];if(cell)cell.style.display=show?'':'none';});
+  });
+});
+/* 逐年表自動上色（紅漲綠跌）並補 % */
+document.querySelectorAll('#annual tr').forEach(function(tr){
+  Array.from(tr.querySelectorAll('td')).slice(1).forEach(function(td){
+    var t=td.textContent.trim();
+    if(!/^約?[+\-]/.test(t))return;
+    td.classList.add(t.indexOf('-')!==-1?'dn':'up');
+    td.textContent=t+'%';
+  });
+});
+</script>
+</body>
+</html>
