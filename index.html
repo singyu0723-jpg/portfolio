@@ -428,8 +428,10 @@ const PLAN_DEF=[
   {d:'2026-07-06',pct:25,note:'機械式執行：到點就買，不看價格'},
   {d:'2026-07-20',pct:25,note:'完成建倉，落在 7 月財報季前'}];
 const LSKEY='erick_plan_2026_v3';
-let S={dates:PLAN_DEF.map(p=>p.d),open:[true,false,false,false],fills:{},hideF:false};
-try{const sv=JSON.parse(localStorage.getItem(LSKEY));if(sv&&sv.dates)S=Object.assign(S,sv);}catch(e){}
+let S={dates:PLAN_DEF.map(p=>p.d),open:[false,false,false,false],fills:{},hideF:true};
+try{const sv=JSON.parse(localStorage.getItem(LSKEY));
+  if(sv){if(sv.dates)S.dates=sv.dates;if(sv.fills)S.fills=sv.fills;}/* 收折與隱藏為瀏覽狀態，每次開啟都回到預設：只展示第 1 批、全部收合 */
+}catch(e){}
 function save(){try{localStorage.setItem(LSKEY,JSON.stringify(S));}catch(e){}}
 const STL={wait:['待執行','st-wait'],due:['今日應執行','st-due'],part:['部分執行','st-part'],done:['已執行','st-done']};
 function todayStr(){return new Date().toISOString().slice(0,10);}
@@ -611,7 +613,7 @@ function recalcHold(){
 }
 function resetPlan(){
   if(!confirm('重設分批計畫的日期與所有買入紀錄？'))return;
-  S={dates:PLAN_DEF.map(p=>p.d),open:[true,false,false,false],fills:{}};
+  S={dates:PLAN_DEF.map(p=>p.d),open:[false,false,false,false],fills:{},hideF:true};
   save();buildPlan();recalcPlan();
 }
 /* ───────── ③ 多市場位階 自動抓價 ───────── */
