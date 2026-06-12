@@ -46,6 +46,8 @@ input[type=range]:disabled::-moz-range-thumb{background:var(--mut);cursor:defaul
 .arow .out .o3{width:92px;text-align:right;font-size:12px;color:var(--mut);font-weight:700;align-self:center}
 .seg .s1{font-size:12.5px;font-weight:800;line-height:1.25}
 .seg .s2{font-size:11.5px;font-weight:700;opacity:.92;line-height:1.25}
+.sgx{font-style:normal}
+.mkin{width:96px;text-align:center}
 .bar{display:flex;height:34px;border-radius:9px;overflow:hidden;margin:0 0 6px;border:1px solid var(--line)}
 .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800;white-space:nowrap;transition:width .15s;overflow:hidden}
 .chips{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 4px}
@@ -118,19 +120,30 @@ td.evt,th.evt{text-align:left;white-space:normal;min-width:230px;color:var(--mut
 h2.sect{font-size:18px;gap:7px}
 .sect .hint{font-size:11px}
 .sect .sbtn{flex-basis:100%;margin-left:0;width:max-content}
-.arow .nm{width:74px;font-size:12.5px}.arow .out{width:auto;min-width:150px;font-size:12px}.arow .out b{font-size:14px}
+/* 滑桿列改兩行：上行 名稱+數字、下行 全寬滑桿 */
+.arow{flex-wrap:wrap;gap:4px 8px;padding:12px 0}
+.arow .nm{width:auto;font-size:13px}
+.arow .out{width:auto;min-width:0;margin-left:auto;font-size:12px}
+.arow .out b{font-size:14px}
+.arow .out .o1{width:40px}.arow .out .o2{width:78px;font-size:11px}.arow .out .o3{width:74px;font-size:10.5px}
+.arow input[type=range]{flex-basis:100%;order:3;min-width:0}
+/* 總額/匯率改兩行網格 */
+.fundbox{display:grid;grid-template-columns:max-content 1fr;gap:8px 10px;align-items:center}
+.fundbox .mut{display:none}
+.fundbox input{width:100% !important;font-size:14px}
 th,td{padding:6px 4px;font-size:12px}
+.zone{font-size:10px;padding:2px 6px;white-space:nowrap}
+.mkin{width:74px}
 .prow{gap:7px}.prow .pnm{width:46px;font-size:11.5px}
 .prow .ppct{flex-basis:48px;font-size:12px}.prow .pamt{flex-basis:118px;font-size:10.5px}
-.arow .out .o1{width:44px}.arow .out .o2{width:80px;font-size:11px}.arow .out .o3{width:78px;font-size:10.5px}
 .bk th,.bk td{padding:5px 3px;font-size:12px}
 .bk .smin{width:58px;font-size:12px;padding:4px 4px}
 .usdhint{display:none}
 .bkhd .amt{font-size:15px}
-.seg .s1{font-size:10.5px}.seg .s2{display:none}
-.fundbox input{width:104px;font-size:14px}
+.sgx{display:none}
+.seg .s1{font-size:11px}.seg .s2{font-size:10px}
 .bar{height:30px}
-#allocbar{height:32px !important}
+#allocbar{height:38px !important}
 }
 </style>
 </head>
@@ -387,13 +400,13 @@ function recalcAlloc(){
   ASSETS.forEach(a=>{const w=Math.max(0,A[a[0]]);if(w<=0)return;const d=document.createElement('div');d.className='seg';
     const nm=a[1].replace('台積電 ','').replace('元大 ','');
     d.style.width=(w/Math.max(hold,1)*100)+'%';d.style.background=a[2];d.style.flexDirection='column';
-    d.innerHTML=(w>=9?'<span class="s1">'+nm+' '+(+w.toFixed(0))+'%</span><span class="s2">$'+f0(fund*w/100)+'</span>':'<span class="s1">'+(+w.toFixed(0))+'%</span>');
+    d.innerHTML=(w>=9?'<span class="s1"><i class="sgx">'+nm+' </i>'+(+w.toFixed(0))+'%</span><span class="s2">$'+f0(fund*w/100)+'</span>':'<span class="s1">'+(+w.toFixed(0))+'%</span>');
     bar.appendChild(d);});
   const us=A.qqq+A.voo+A.googl,tw=A.t2330+A.t0050;
   const gb=document.getElementById('groupbar');gb.innerHTML='';
   [['美股',us,'#0d9488'],['台股',tw,'#bd8420']].forEach(g=>{if(g[1]<=0)return;const d=document.createElement('div');d.className='seg';
     d.style.width=(g[1]/Math.max(hold,1)*100)+'%';d.style.background=g[2];
-    d.textContent=g[0]+' '+(+g[1].toFixed(0))+'% $'+f0(fund*g[1]/100);gb.appendChild(d);});
+    d.innerHTML='<span class="s1">'+g[0]+' '+(+g[1].toFixed(0))+'%<i class="sgx"> $'+f0(fund*g[1]/100)+'</i></span>';gb.appendChild(d);});
   const expT=A.t2330+A.t0050*0.57;
   const expG=A.googl+A.qqq*0.05+A.voo*0.035;
   document.getElementById('tsmc_exp').textContent=(+expT.toFixed(1))+'%';
@@ -609,8 +622,8 @@ function buildMkt(){
   MKT.forEach((m,i)=>{
     const tr=document.createElement('tr');
     tr.innerHTML='<td class="b">'+m[0]+'<span class="qa" id="mq_'+i+'"></span></td>'+
-      '<td><input type="number" class="smin" data-mi="'+i+'" data-mf="2" value="'+(m[2]==null?'':m[2])+'" step="any" style="text-align:center;width:96px"></td>'+
-      '<td><input type="number" class="smin" data-mi="'+i+'" data-mf="3" value="'+(m[3]==null?'':m[3])+'" step="any" style="text-align:center;width:96px"></td>'+
+      '<td><input type="number" class="smin mkin" data-mi="'+i+'" data-mf="2" value="'+(m[2]==null?'':m[2])+'" step="any"></td>'+
+      '<td><input type="number" class="smin mkin" data-mi="'+i+'" data-mf="3" value="'+(m[3]==null?'':m[3])+'" step="any"></td>'+
       '<td class="b" id="md_'+i+'">—</td><td id="mz_'+i+'">—</td>';
     tb.appendChild(tr);
   });
